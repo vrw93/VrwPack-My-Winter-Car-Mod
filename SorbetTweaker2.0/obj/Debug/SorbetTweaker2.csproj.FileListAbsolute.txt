@@ -1,0 +1,6 @@
+D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\bin\Debug\SorbetTweaker2.0.dll
+D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\bin\Debug\SorbetTweaker2.0.pdb
+D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\obj\Debug\SorbetTweaker2.csproj.AssemblyReference.cache
+D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\obj\Debug\SorbetTweaker2.csproj.CoreCompileInputs.cache
+D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\obj\Debug\SorbetTweaker2.0.dll
+D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\obj\Debug\SorbetTweaker2.0.pdb
