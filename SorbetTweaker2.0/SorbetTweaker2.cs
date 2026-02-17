@@ -1,10 +1,11 @@
-﻿using MSCLoader;
-using UnityEngine;
-using HutongGames.PlayMaker;
-using System.Reflection;
-using UnityEngine.UI;
+﻿using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
+using MSCLoader;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace SorbetTweaker2
 {
@@ -13,21 +14,36 @@ namespace SorbetTweaker2
         public override string ID => "VrwPack"; // Your (unique) mod ID 
         public override string Name => "VrwPack"; // Your mod name
         public override string Author => "VRW"; // Name of the Author (your name)
-        public override string Version => "0.1"; // Version
-        public override string Description => "Sorbet Tweaker by Vrw"; // Short description of your mod 
+        public override string Version => "1.0"; // Version
+        public override string Description => "A Simple Mod For Adding Clock & Unlimited Fuel"; // Short description of your mod 
+        public override byte[] Icon
+        {
+            get
+            {
+                Stream stream = Assembly.GetExecutingAssembly()
+                    .GetManifestResourceStream("SorbetTweaker2._0.icon.png");
+
+                if (stream == null)
+                    return null;
+
+                byte[] buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
+                stream.Close();
+
+                return buffer;
+            }
+        }
         public override Game SupportedGames => Game.MyWinterCar;
 
-        public SettingsCheckBox inffuel;
+        public SettingsCheckBox sinffuel, Ginffuel, Kinffuel, isdebug;
         SettingsSliderInt fontSize;
-        SettingsSlider value;
-        FsmFloat fuelData, clockM, sorbetFuelFloat;
-        PlayMakerFSM sorbetFuelFsm;
+        FsmFloat clockM, sorbetFuelFloat, gifuFsm, kekmetFsm;
         FsmInt clockH;
         Canvas canvas;
         GameObject panel;
         Text time;
-        bool dumped = false, error = false, isCache;
-        float cachefuellevel;
+        bool error = false, isSoCache, isGiCache, isKeCache;
+        float cachefuellevel, GifuCache, KeCache;
 
         private void debugs()
         {
@@ -60,10 +76,22 @@ namespace SorbetTweaker2
 
         private void Mod_Settings()
         {
-            Settings.AddHeader("Sorbet Tweaker");
-            inffuel = Settings.AddCheckBox(
-                "inffuel",
-                "unlimited fuel",
+            Settings.AddHeader("Vehicle Tweaker");
+            sinffuel = Settings.AddCheckBox(
+                "sinffuel",
+                "Sorbet Unlimited Fuel",
+                false
+                );
+
+            Ginffuel = Settings.AddCheckBox(
+                "Ginffuel",
+                "Gifu Unlimited Fuel",
+                false
+                );
+
+            Kinffuel = Settings.AddCheckBox(
+                "Kinffual",
+                "Kekmet Unlimited Fuel",
                 false
                 );
 
@@ -71,8 +99,12 @@ namespace SorbetTweaker2
             fontSize = Settings.AddSlider("FontSize", "Font Size", 14, 99);
             SettingsButton change = Settings.AddButton("Save", changeFontSize);
             Settings.AddHeader("DEBUG");
-            value = Settings.AddSlider("debugV", "Debug Value", 0f, 60f);
-            SettingsButton debug = Settings.AddButton("Debug", debugs);
+            isdebug = Settings.AddCheckBox(
+                "isdebug",
+                "Debuging",
+                false
+                );
+            SettingsButton debug = Settings.AddButton("Dump Fuel Data", debugs);
         }
 
         private string GetCurrentTime()
@@ -126,7 +158,7 @@ namespace SorbetTweaker2
 
         private void Mod_OnLoad()
         {
-            GameObject sorbetGo = GameObject.Find("SORBET(190-200psi)");
+            /*GameObject sorbetGo = GameObject.Find("SORBET(190-200psi)");
             if (sorbetGo == null)
             {
                 ModConsole.Print("Sorbet root not found");
@@ -157,7 +189,12 @@ namespace SorbetTweaker2
                 ModConsole.LogError("fuelData not found");
             }
 
-            ModConsole.Log($"fuelData found current value {fuelData.Value}");
+            ModConsole.Log($"fuelData found current value {fuelData.Value}");*/
+
+            foreach (string s in Assembly.GetExecutingAssembly().GetManifestResourceNames())
+            {
+                ModConsole.Print(s);
+            }
 
 
             //Clock UI
@@ -178,34 +215,11 @@ namespace SorbetTweaker2
             panel.GetComponent<RectTransform>().anchoredPosition = new Vector2(20, 20);
             time = CreateText(panel, GetCurrentTime(), new Vector2(0, 0));
             ModConsole.Log("succesfuly make Time UI");
-            //getFsmFuel();
-            //getFuelData();
             getFsmFuel();
         }
 
-        private void getFuelData()
+        private void sorbetUnlimitedFuel()
         {
-            var sorbet = GameObject.Find("SORBET(190-200psi)");
-            Transform sim = sorbet.transform.Find("Simulation/FuelTankSorbett");
-            if(sim == null)
-            {
-                ModConsole.LogError("SORBET/Simulation/FuelTankSorbet Not Found");
-                return;
-            }
-            sorbetFuelFsm = sim.GetComponent<PlayMakerFSM>();
-
-            if(sorbetFuelFsm == null)
-            {
-                ModConsole.LogError("Sorbet PlayMakerFSM Not Found");
-                return;
-            }
-            sorbetFuelFloat = sorbetFuelFsm.FsmVariables.GetFsmFloat("Data");
-            ModConsole.Log("Sorbet Fuel FSM Intialized | " + sorbetFuelFloat.Value);
-        }
-
-        private void unlimitedFuel()
-        {
-            //getFuelData();
             if (sorbetFuelFloat == null)
             {
                 ModConsole.LogError("Sorbet Fuel Float Not Found");
@@ -213,23 +227,77 @@ namespace SorbetTweaker2
                 return;
             }
 
-            if (inffuel.GetValue())
+            if (sinffuel.GetValue())
             {
-                if (!isCache)
+                if (!isSoCache)
                 {
                     cachefuellevel = sorbetFuelFloat.Value;
-                    isCache = true;
+                    isSoCache = true;
                 }
 
                 sorbetFuelFloat.Value = 58f;
-                ModConsole.Log($"Fuel Value: {sorbetFuelFloat.Value} | cache: {cachefuellevel}");
+                if (isdebug.GetValue())
+                    ModConsole.Log($"Sorbet Fuel | {sorbetFuelFloat.Value}");
             }
             else
             {
-                if (isCache)
+                if (isSoCache)
                     sorbetFuelFloat.Value = cachefuellevel;
-                isCache = false;
-                //ModConsole.Log($"Fuel Value: {sorbetFuelFloat.Value}");
+                isSoCache = false;
+            }
+        }
+
+        private void gifuUnlFuel()
+        {
+            if(gifuFsm == null)
+            {
+                ModConsole.LogError("Gifu Fuel FSM not found");
+                error = true;
+                return;
+            }
+            if (Ginffuel.GetValue())
+            {
+                if (!isGiCache)
+                {
+                    GifuCache = gifuFsm.Value;
+                    isGiCache = true;
+                }
+                gifuFsm.Value = 130f;
+                if (isdebug.GetValue())
+                    ModConsole.Print($"Gifu Fuel | {gifuFsm.Value}");
+            }
+            else
+            {
+                if (isGiCache)
+                    gifuFsm = GifuCache;
+                isGiCache = false;
+            }
+        }
+
+        private void kekmetUnlFuel()
+        {
+            if (gifuFsm == null)
+            {
+                ModConsole.LogError("Kekmet Fuel FSM not found");
+                error = true;
+                return;
+            }
+            if (Kinffuel.GetValue())
+            {
+                if (!isKeCache)
+                {
+                    KeCache = kekmetFsm.Value;
+                    isKeCache = true;
+                }
+                kekmetFsm.Value = 65f;
+                if (isdebug.GetValue())
+                    ModConsole.Print($"Kekmet Fuel | {kekmetFsm.Value}");
+            }
+            else
+            {
+                if (isKeCache)
+                    kekmetFsm = KeCache;
+                isKeCache = false;
             }
         }
 
@@ -246,7 +314,20 @@ namespace SorbetTweaker2
                     {
                         ModConsole.Log($"{GetPath(fsm.gameObject)} | {fsm.FsmName} = {f.Value}");
                         if (fsm.gameObject.name == "FuelTankSorbett")
-                            { sorbetFuelFloat = f; ModConsole.Log("Found Fuel Data "+sorbetFuelFloat.Value); }
+                        { 
+                            sorbetFuelFloat = f;
+                            ModConsole.Log("Found Fuel Data "+sorbetFuelFloat.Value); 
+                        }
+                        if (fsm.gameObject.name == "FuelTankGifu" && f.Value > 0)
+                        {
+                            gifuFsm = f;
+                            ModConsole.Log("Found Gifu Fuel");
+                        }
+                        if(fsm.gameObject.name == "FuelTankKekmet" && f.Value > 0)
+                        {
+                            kekmetFsm = f;
+                            ModConsole.Log("Found Kekmet Fuel");
+                        }
                     }
                 }
             }
@@ -255,8 +336,12 @@ namespace SorbetTweaker2
         private void Mod_Update()
         {
             time.text = GetCurrentTime();
-            if(!error)
-                unlimitedFuel();
+            if (!error)
+            {
+                sorbetUnlimitedFuel();
+                gifuUnlFuel();
+                kekmetUnlFuel();
+            }
         }
 
         private void changeFontSize()
