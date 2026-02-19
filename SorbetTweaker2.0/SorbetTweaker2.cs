@@ -35,14 +35,14 @@ namespace SorbetTweaker2
         }
         public override Game SupportedGames => Game.MyWinterCar;
 
-        public SettingsCheckBox sinffuel, Ginffuel, Kinffuel, isdebug;
+        public SettingsCheckBox sinffuel, Ginffuel, Kinffuel, isdebug, is12;
         SettingsSliderInt fontSize;
         FsmFloat clockM, sorbetFuelFloat, gifuFsm, kekmetFsm;
         FsmInt clockH;
         Canvas canvas;
         GameObject panel;
         Text time;
-        bool error = false, isSoCache, isGiCache, isKeCache;
+        bool errorFuel = false, isSoCache, isGiCache, isKeCache;
         float cachefuellevel, GifuCache, KeCache;
 
         private void debugs()
@@ -67,11 +67,19 @@ namespace SorbetTweaker2
             SetupFunction(Setup.Update, Mod_Update);
             SetupFunction(Setup.ModSettings, Mod_Settings);
             SetupFunction(Setup.ModSettingsLoaded, Mod_SettingsLoaded);
+            SetupFunction(Setup.OnSave, Mod_OnSave);
+        }
+
+        private void Mod_OnSave()
+        {
+            sorbetFuelFloat.Value = cachefuellevel;
+            kekmetFsm.Value = KeCache;
+            gifuFsm.Value = GifuCache;
         }
 
         private void Mod_SettingsLoaded()
         {
-            changeFontSize();
+            //Nothing
         }
 
         private void Mod_Settings()
@@ -95,9 +103,14 @@ namespace SorbetTweaker2
                 false
                 );
 
-            Settings.AddHeader("UI");
+            Settings.AddHeader("Clock Settings");
             fontSize = Settings.AddSlider("FontSize", "Font Size", 14, 99);
             SettingsButton change = Settings.AddButton("Save", changeFontSize);
+            is12 = Settings.AddCheckBox(
+                    "isPm",
+                    "12 Hour Clock",
+                    false);
+
             Settings.AddHeader("DEBUG");
             isdebug = Settings.AddCheckBox(
                 "isdebug",
@@ -117,7 +130,22 @@ namespace SorbetTweaker2
             float sec = (minutef - minute) * 60f;
             sec = Mathf.FloorToInt(sec);
 
-            return $"{clockH:00}:{minute:00}:{sec:00}";
+            int Hour = clockH.Value;
+            if (is12.GetValue())
+            {
+                if(clockH.Value >= 12)
+                {
+                    Hour -= 12;
+                    return $"{Hour:00}:{minute:00}:{sec:00} PM";
+                }else
+                {
+                    return $"{Hour:00}:{minute:00}:{sec:00} AM";
+                }
+            }
+            if (clockH.Value == 24)
+                Hour = 0;
+
+            return $"{Hour:00}:{minute:00}:{sec:00}";
         }
 
         private GameObject CreatePanel(Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot)
@@ -216,6 +244,7 @@ namespace SorbetTweaker2
             time = CreateText(panel, GetCurrentTime(), new Vector2(0, 0));
             ModConsole.Log("succesfuly make Time UI");
             getFsmFuel();
+            changeFontSize();
         }
 
         private void sorbetUnlimitedFuel()
@@ -223,7 +252,7 @@ namespace SorbetTweaker2
             if (sorbetFuelFloat == null)
             {
                 ModConsole.LogError("Sorbet Fuel Float Not Found");
-                error = true;
+                errorFuel = true;
                 return;
             }
 
@@ -252,7 +281,7 @@ namespace SorbetTweaker2
             if(gifuFsm == null)
             {
                 ModConsole.LogError("Gifu Fuel FSM not found");
-                error = true;
+                errorFuel = true;
                 return;
             }
             if (Ginffuel.GetValue())
@@ -279,7 +308,7 @@ namespace SorbetTweaker2
             if (gifuFsm == null)
             {
                 ModConsole.LogError("Kekmet Fuel FSM not found");
-                error = true;
+                errorFuel = true;
                 return;
             }
             if (Kinffuel.GetValue())
@@ -336,7 +365,7 @@ namespace SorbetTweaker2
         private void Mod_Update()
         {
             time.text = GetCurrentTime();
-            if (!error)
+            if (!errorFuel)
             {
                 sorbetUnlimitedFuel();
                 gifuUnlFuel();
