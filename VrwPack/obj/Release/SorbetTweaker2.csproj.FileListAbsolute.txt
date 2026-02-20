@@ -1,4 +1,0 @@
-D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\bin\Release\SorbetTweaker2.0.dll
-D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\obj\Release\SorbetTweaker2.csproj.AssemblyReference.cache
-D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\obj\Release\SorbetTweaker2.csproj.CoreCompileInputs.cache
-D:\apk+game\my winter car\myMod\sorbetTweaker\SorbetTweaker2.0\SorbetTweaker2.0\obj\Release\SorbetTweaker2.0.dll
