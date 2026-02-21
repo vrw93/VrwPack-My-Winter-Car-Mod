@@ -23,7 +23,7 @@ A Simple Mod To Add Clock & Unlimited Fuel Into My Winter Car
 ## Road Map
 - [ ] Add More Vehicle
 - [ ] More Tweak Option
-- [ ] ~Add Poster~ (Move To Other Mod)
+- [ ] ~Add Poster~ (Move To [More Poster](https://github.com/vrw93/More-Poster))
 - [ ] QOL
 ---
 
